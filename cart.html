@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>購物車</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="logo.ico">
+  <style>
+    body{ font-family:sans-serif; background:#f7f7f7; margin:0; user-select:none;}
+    .container{ max-width:1000px; margin:30px auto; background:#fff; border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,.08); padding:20px; }
+    .topbar{ display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+    a{ color:#111; text-decoration:none; }
+    table{ width:100%; border-collapse:collapse; margin-top:10px; }
+    th, td{ padding:10px; border-bottom:1px solid #eee; text-align:left; }
+    th{ background:#fafafa; }
+    img{ width:60px; height:60px; object-fit:cover; border-radius:8px; }
+    .qtybox{ display:flex; align-items:center; gap:6px; }
+    .btn{ padding:6px 10px; border:1px solid #111; background:#fff; border-radius:8px; cursor:pointer; }
+    .btn:hover{ background:#111; color:#fff; }
+    .right{ text-align:right; }
+    .total{ font-size:20px; font-weight:bold; }
+    .empty{ text-align:center; padding:30px; color:#555; }
+    .badge{ display:inline-block; min-width:20px; padding:2px 6px; font-size:12px; border-radius:10px; background:#111; color:#fff; text-align:center; margin-left:6px; }
+    /* 響應式調整 */
+@media (max-width: 1024px) {
+  table {
+    font-size: 14px;
+  }
+  img {
+    width: 50px;
+    height: 50px;
+  }
+  .btn {
+    font-size: 14px;
+    padding: 8px 12px;
+  }
+}
+
+@media (max-width: 768px) {
+  table, thead, tbody, th, td, tr {
+    display: block;
+    width: 100%;
+  }
+  thead {
+    display: none;
+  }
+  tr {
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    padding: 10px;
+    border-radius: 8px;
+    background: #fff;
+  }
+  td {
+    border: none;
+    padding: 8px 0;
+    text-align: left;
+  }
+  img {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 8px;
+  }
+  .right {
+    text-align: left;
+  }
+  .btn {
+    font-size: 16px;
+    padding: 10px 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  img {
+    width: 100%;
+    height: auto;
+  }
+  .btn {
+    width: 100%;
+    text-align: center;
+    padding: 12px;
+  }
+  .total {
+    font-size: 18px;
+  }
+}
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <a href="index.html">← 繼續購物</a>
+      <div>🛒 購物車 <span id="cartCount" class="badge">0</span></div>
+    </div>
+
+    <div id="wrap"></div>
+  </div>
+
+  <script>
+    function getCart(){ try{ return JSON.parse(localStorage.getItem('cart')||'[]'); }catch{ return []; } }
+    function setCart(c){ localStorage.setItem('cart', JSON.stringify(c)); }
+    function cartCount(){ return getCart().reduce((s,i)=>s+(i.qty||0),0); }
+    function updateCartCount(){ const el=document.getElementById('cartCount'); if(el) el.textContent = cartCount(); }
+
+    function render(){
+      const host = document.getElementById('wrap');
+      const cart = getCart();
+      if(cart.length===0){
+        host.innerHTML = `<div class="empty">購物車是空的。</div>`;
+        updateCartCount();
+        return;
+      }
+
+      const rows = cart.map((i,idx)=>`
+        <tr data-id="${i.id}">
+          <td><img src="${i.img}" alt="${i.name}"></td>
+          <td>${i.name}</td>
+          <td>NT$${i.price.toLocaleString()}</td>
+          <td>
+            <div class="qtybox">
+              <button class="btn minus">-</button>
+              <span class="q">${i.qty}</span>
+              <button class="btn plus">+</button>
+            </div>
+          </td>
+          <td class="right">NT$${(i.price*i.qty).toLocaleString()}</td>
+          <td><button class="btn remove">移除</button></td>
+        </tr>
+      `).join('');
+
+      const total = cart.reduce((s,i)=>s+i.price*i.qty,0);
+
+      host.innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>商品</th><th>名稱</th><th>單價</th><th>數量</th><th class="right">小計</th><th>操作</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+          <tfoot>
+            <tr>
+              <td colspan="6" class="right total">合計：NT$${total.toLocaleString()}</td>
+            </tr>
+          </tfoot>
+        </table>
+        <div class="right" style="margin-top:12px;">
+          <button class="btn" id="checkout">前往 Visa 結帳</button>
+        </div>
+      `;
+
+      // 綁定事件
+      host.querySelectorAll('tr[data-id]').forEach(tr=>{
+        const id = tr.getAttribute('data-id');
+        tr.querySelector('.minus').addEventListener('click', ()=>{
+          const c = getCart(); const it = c.find(x=>x.id===id);
+          if(!it) return;
+          it.qty = Math.max(1, it.qty-1);
+          setCart(c); render();
+        });
+        tr.querySelector('.plus').addEventListener('click', ()=>{
+          const c = getCart(); const it = c.find(x=>x.id===id);
+          if(!it) return;
+          it.qty += 1;
+          setCart(c); render();
+        });
+        tr.querySelector('.remove').addEventListener('click', ()=>{
+          let c = getCart(); c = c.filter(x=>x.id!==id);
+          setCart(c); render();
+        });
+      });
+
+      document.getElementById('checkout').addEventListener('click', ()=>{
+  location.href = 'checkout.html';
+});
+
+
+      updateCartCount();
+    }
+
+    render();
+  </script>
+</body>
+</html>

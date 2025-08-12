@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<head>
+  <title>超便宜3C專賣</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="logo.ico">
+  <style>
+    body{ background-color:#f0f0f0; font-family:sans-serif; margin:0; }
+    header{ background-color:black; padding:0.1px; user-select:none; }
+    nav{ display:flex; background-color:cyan; }
+    ul{ display:flex; width:100%; align-items:center; }
+    li{ display:flex; margin-right:50px; font-size:24px; font-weight:bold; align-items:center; }
+    li a{ color:black; text-decoration:none; }
+    li a:hover{ border-bottom:solid black 3px; }
+    h1{ font-size:35px; text-align:center; }
+
+    .list{ width:100%; }
+    .list-track{ display:flex; gap:30px; transition:transform .3s ease; justify-content:center; }
+    .card{ background:#fff; border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,.1); width:300px; user-select:none; overflow:hidden; cursor:pointer; }
+    .card img{ width:100%; height:400px; object-fit:cover; }
+    .card-content{ padding:15px; }
+    .card-title{ font-size:28px; font-weight:bold; margin-bottom:6px; }
+    .card-subtitle{ font-size:20px; color:#f00; margin-bottom:10px; }
+    .card-text{ font-size:14px; line-height:1.4; color:#333; }
+    .card-actions{ display:flex; gap:10px; margin-top:10px; }
+    .btn{ padding:8px 10px; border-radius:8px; border:1px solid #ddd; background:#fff; font-size:14px; cursor:pointer; }
+    .btn:hover{ background:#f5f5f5; }
+    .btn-primary{ border-color:#111; }
+    .btn-primary:hover{ background:#111; color:#fff; }
+
+    .strikethrough-with-slash{ position:relative; display:inline-block; font-size:18px; color:gray; }
+    .strikethrough-with-slash::before{
+      content:""; position:absolute; left:0; right:0; top:50%; height:3px; background-color:red; transform-origin:center;
+    }
+    .strikethrough-with-slash span{ position:relative; z-index:1; background:#fff; padding:0 2px; }
+
+    .filter{ background:#fff; display:flex; align-items:center; justify-content:center; }
+    .filter button{ background:#fff; padding:4px; margin-right:5px; border-radius:5px; }
+    .filter a button:hover{ background:#e7e7e7; cursor:pointer; }
+
+    /* 右側元素 */
+    li.login{ margin-left:auto; }
+    #userMenu{ position:relative; display:none; }
+    #userPhoto{ width:40px; height:40px; border-radius:50%; cursor:pointer; }
+    #dropdownMenu{
+      display:none; position:absolute; right:0; top:45px; background:#fff; border:1px solid #ccc; border-radius:5px;
+      min-width:200px; box-shadow:0 2px 8px rgba(0,0,0,.15);
+    }
+    #dropdownMenu div{ padding:10px; border-bottom:1px solid #eee; }
+    #dropdownMenu div:last-child{ border-bottom:none; }
+    #dropdownMenu div:hover{ background:#f5f5f5; cursor:pointer; }
+
+    /* 購物車數量徽章 */
+    .cart-link{ position:relative; margin-left:auto; }
+    .cart-badge{
+      display:inline-block; min-width:20px; padding:2px 6px; font-size:12px; border-radius:10px;
+      background:#111; color:#fff; text-align:center; margin-left:6px;
+    }
+
+    /* 讓「加入購物車」可在卡片中點擊但不觸發跳轉 */
+    .add-to-cart{ pointer-events:auto; }
+    /* 響應式調整 */
+@media (max-width: 1024px) {
+  /* 平板：卡片兩欄，文字稍微大一點 */
+  .list-track {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .card {
+    width: 45%;
+    margin-bottom: 20px;
+  }
+  .card img {
+    height: auto;
+  }
+  .card-title {
+    font-size: 24px;
+  }
+  .card-subtitle {
+    font-size: 18px;
+  }
+  .card-text {
+    font-size: 14px;
+  }
+  .btn {
+    font-size: 14px;
+    padding: 10px 14px;
+  }
+}
+
+@media (max-width: 768px) {
+  /* 小平板 / 大手機：卡片一欄，標題、按鈕再放大 */
+  .card {
+    width: 90%;
+  }
+  nav ul {
+    flex-wrap: wrap;
+  }
+  nav li {
+    margin-right: 20px;
+    font-size: 20px;
+  }
+  h1 {
+    font-size: 28px;
+  }
+  .btn {
+    font-size: 16px;
+    padding: 12px 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  /* 手機：單欄卡片，字體更大，按鈕更方便點 */
+  .card {
+    width: 100%;
+    border-radius: 8px;
+  }
+  .card-title {
+    font-size: 22px;
+  }
+  .card-subtitle {
+    font-size: 16px;
+  }
+  .card-text {
+    font-size: 14px;
+  }
+  .btn {
+    font-size: 16px;
+    padding: 14px 20px;
+  }
+  nav ul {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  nav li {
+    margin: 8px 0;
+  }
+  header p {
+    font-size: 14px;
+    padding: 4px;
+  }
+}
+/* Footer 樣式 */
+.site-footer {
+  background-color: #111;
+  color: #fff;
+  padding: 40px 20px 20px;
+  margin-top: 40px;
+  font-size: 14px;
+}
+
+.footer-container {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.footer-section {
+  flex: 1 1 250px;
+  margin: 10px;
+}
+
+.footer-section h3 {
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+.footer-section p {
+  line-height: 1.6;
+}
+
+.footer-section ul {
+  list-style: none;
+  padding: 0;
+}
+
+.footer-section ul li {
+  margin-bottom: 8px;
+}
+
+.footer-section ul li a {
+  color: #bbb;
+  text-decoration: none;
+}
+
+.footer-section ul li a:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+
+.footer-bottom {
+  text-align: center;
+  padding-top: 20px;
+  border-top: 1px solid #444;
+  font-size: 12px;
+  color: #bbb;
+}
+
+/* 響應式 Footer */
+@media (max-width: 768px) {
+  .footer-container {
+    flex-direction: column;
+    text-align: center;
+  }
+  .footer-section {
+    margin-bottom: 20px;
+  }
+}
+
+  </style>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDmtArzeICIK5BGjrK7HM4IDiCliqSYEqo",
+      authDomain: "verycheap3c-store.firebaseapp.com",
+      projectId: "verycheap3c-store",
+      storageBucket: "verycheap3c-store.firebasestorage.app",
+      messagingSenderId: "108546246505",
+      appId: "1:108546246505:web:528e644f48e806a1b05ff8",
+      measurementId: "G-1BGPBHRYZC"
+    };
+    firebase.initializeApp(firebaseConfig);
+  </script>
+</head>
+<body>
+  <header>
+    <p style="font-size:20px;color:white;text-align:center;">
+      消費滿NT$500免運費，直接宅配到你家。 消費滿NT$1000，再送精美好禮3選1！
+    </p>
+  </header>
+
+  <nav>
+    <ul>
+      <li style="font-size:40px;margin-right:70px;user-select:none;">超便宜3C專賣</li>
+      <!-- 購物車連結（帶數量徽章） -->
+      <li class="cart-link">
+        <a href="cart.html">🛒 購物車 <span id="cartCount" class="cart-badge">0</span></a>
+      </li>
+    </ul>
+  </nav>
+
+  <div class="main">
+    <div class="filter">
+      <p style="margin-right:15px;">篩選:</p>
+      <a href="#iphone"><button>全新iPhone便宜賣</button></a>
+      <a href="#3C-gadget"><button>【3C配件最低價】豆腐頭、行動電源</button></a>
+      <a href="#3C-gadget2"><button>【3C配件最低價】充電線</button></a>
+    </div>
+
+    <h1 id="iphone">全新iPhone便宜賣</h1>
+    <div class="list">
+      <center>
+        <div class="list-track">
+          <!-- 每張卡新增 data-id 與 加入購物車按鈕 -->
+          <div class="card" data-id="p001">
+            <img src="iphone_16_pro.png" alt="">
+            <div class="card-content">
+              <div class="card-title">iPhone 16 Pro</div>
+              <div class="card-subtitle">
+                <span class="strikethrough-with-slash">NT$36,900</span><br>破盤價:NT$32,000
+              </div>
+              <div class="card-text">iPhone 的極致。<br>庫存:757</div>
+              <div class="card-actions">
+                <button class="btn btn-primary add-to-cart" data-id="p001">加入購物車</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" data-id="p002">
+            <img src="iphone_16.png" alt="">
+            <div class="card-content">
+              <div class="card-title">iPhone 16</div>
+              <div class="card-subtitle">
+                <span class="strikethrough-with-slash">NT$29,900</span><br>破盤價:NT$26,000
+              </div>
+              <div class="card-text">滿載強大實力。<br>庫存:6539</div>
+              <div class="card-actions">
+                <button class="btn btn-primary add-to-cart" data-id="p002">加入購物車</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" data-id="p003">
+            <img src="iphone_16e.png" alt="">
+            <div class="card-content">
+              <div class="card-title">iPhone 16e</div>
+              <div class="card-subtitle">
+                <span class="strikethrough-with-slash">NT$21,900</span><br>破盤價:NT$18,500
+              </div>
+              <div class="card-text">最新 iPhone，超值超值得。<br>庫存:8881</div>
+              <div class="card-actions">
+                <button class="btn btn-primary add-to-cart" data-id="p003">加入購物車</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" data-id="p004">
+            <img src="iphone_15.png" alt="">
+            <div class="card-content">
+              <div class="card-title">iPhone 15</div>
+              <div class="card-subtitle">
+                <span class="strikethrough-with-slash">NT$25,900</span><br>破盤價:NT$22,000
+              </div>
+              <div class="card-text">還是超讚，沒變。<br>庫存:1402</div>
+              <div class="card-actions">
+                <button class="btn btn-primary add-to-cart" data-id="p004">加入購物車</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </center>
+    </div>
+
+    <h1 id="3C-gadget">【3C配件最低價】豆腐頭、行動電源</h1>
+    <div class="list">
+      <center>
+        <div class="list-track">
+          <div class="card" data-id="p101">
+            <img src="000001_1662535030.webp" alt="">
+            <div class="card-content">
+              <div class="card-title">USB C 豆腐頭(買一送一)</div>
+              <div class="card-subtitle"><span class="strikethrough-with-slash">NT$199</span><br>破盤價:NT$99</div>
+              <div class="card-text">好用。<br>庫存:2237</div>
+              <div class="card-actions">
+                <button class="btn btn-primary add-to-cart" data-id="p101">加入購物車</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" data-id="p102">
+            <img src="images.jpg" alt="">
+            <div class="card-content">
+              <div class="card-title">Type C,USB C 雙孔豆腐頭</div>
+              <div class="card-subtitle"><span class="strikethrough-with-slash">NT$299</span><br>破盤價:NT$199</div>
+              <div class="card-text">好用。<br>庫存:3909</div>
+              <div class="card-actions">
+                <button class="btn btn-primary add-to-cart" data-id="p102">加入購物車</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" data-id="p103">
+            <img src="aukey-cubie-10000mah-pb-y55-01-o1000.webp" alt="">
+            <div class="card-content">
+              <div class="card-title">彩色行動電源</div>
+              <div class="card-subtitle"><span class="strikethrough-with-slash">NT$599</span><br>破盤價:NT$499</div>
+              <div class="card-text">好用。<br>庫存:4727</div>
+              <div class="card-actions">
+                <button class="btn btn-primary add-to-cart" data-id="p103">加入購物車</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" data-id="p104">
+            <img src="下載.jpg" alt="">
+            <div class="card-content">
+              <div class="card-title">多功能行動電源</div>
+              <div class="card-subtitle"><span class="strikethrough-with-slash">NT$799</span><br>破盤價:NT$699</div>
+              <div class="card-text">好用。<br>庫存:8940</div>
+              <div class="card-actions">
+                <button class="btn btn-primary add-to-cart" data-id="p104">加入購物車</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </center>
+    </div>
+
+    <h1 id="3C-gadget2">【3C配件最低價】充電線</h1>
+    <div class="list">
+      <center>
+        <div class="list-track">
+          <div class="card" data-id="p201">
+            <img src="MQKJ3.jpg" alt="">
+            <div class="card-content">
+              <div class="card-title">Type C to C 充電線</div>
+              <div class="card-subtitle"><span class="strikethrough-with-slash">NT$199</span><br>破盤價:NT$99</div>
+              <div class="card-text">好用。<br>庫存:1036</div>
+              <div class="card-actions">
+                <button class="btn btn-primary add-to-cart" data-id="p201">加入購物車</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" data-id="p202">
+            <img src="MM0A3.jpg" alt="">
+            <div class="card-content">
+              <div class="card-title">lighting to C 充電線</div>
+              <div class="card-subtitle"><span class="strikethrough-with-slash">NT$199</span><br>破盤價:NT$99</div>
+              <div class="card-text">好用。<br>庫存:9760</div>
+              <div class="card-actions">
+                <button class="btn btn-primary add-to-cart" data-id="p202">加入購物車</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" data-id="p203">
+            <img src="6592967_R1_m.webp" alt="">
+            <div class="card-content">
+              <div class="card-title">Type C to USB C 充電線</div>
+              <div class="card-subtitle"><span class="strikethrough-with-slash">NT$149</span><br>破盤價:NT$49</div>
+              <div class="card-text">好用。<br>庫存:9878</div>
+              <div class="card-actions">
+                <button class="btn btn-primary add-to-cart" data-id="p203">加入購物車</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" data-id="p204">
+            <img src="1ED27519CFFFA86FAAD50B998CC419DE04775902.jpg" alt="">
+            <div class="card-content">
+              <div class="card-title">lighting to USB C 充電線</div>
+              <div class="card-subtitle"><span class="strikethrough-with-slash">NT$149</span><br>破盤價:NT$49</div>
+              <div class="card-text">好用。<br>庫存:5755</div>
+              <div class="card-actions">
+                <button class="btn btn-primary add-to-cart" data-id="p204">加入購物車</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </center>
+    </div>
+  </div>
+<footer class="site-footer">
+  <div class="footer-container">
+    <div class="footer-section">
+      <h3>超便宜3C專賣</h3>
+      <p>提供最優惠的價格與最優質的3C商品，讓您輕鬆入手心儀好物。</p>
+    </div>
+    <div class="footer-section">
+      <h3>快速連結</h3>
+      <ul>
+        <li><a href="index.html">首頁</a></li>
+        <li><a href="#iphone">iPhone 系列</a></li>
+        <li><a href="#3C-gadget">3C 配件</a></li>
+        <li><a href="cart.html">購物車</a></li>
+      </ul>
+    </div>
+    <div class="footer-section">
+      <h3>聯絡我們</h3>
+      <p>Email: verycheap3c.business@gmail.com</p>
+      <p>電話: 021450550</p>
+      <p>地址: 台北市大同區南京西路14號</p>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2025 超便宜3C專賣. All rights reserved.</p>
+  </div>
+</footer>
+
+  <script>
+    // ---- 產品資料表（提供 product.html 也能識別）----
+    const PRODUCTS = {
+      // iPhone
+      p001:{ id:"p001", name:"iPhone 16 Pro", price:32000, original:36900, stock:757,  img:"iphone_16_pro.png", desc:"iPhone 的極致。" },
+      p002:{ id:"p002", name:"iPhone 16",     price:26000, original:29900, stock:6539, img:"iphone_16.png",     desc:"滿載強大實力。" },
+      p003:{ id:"p003", name:"iPhone 16e",    price:18500, original:21900, stock:8881, img:"iphone_16e.png",    desc:"最新 iPhone，超值超值得。" },
+      p004:{ id:"p004", name:"iPhone 15",     price:22000, original:25900, stock:1402, img:"iphone_15.png",     desc:"還是超讚，沒變。" },
+
+      // 豆腐頭/行動電源
+      p101:{ id:"p101", name:"USB C 豆腐頭(買一送一)", price:99,  original:199, stock:2237, img:"000001_1662535030.webp", desc:"好用。" },
+      p102:{ id:"p102", name:"Type C,USB C 雙孔豆腐頭",  price:199, original:299, stock:3909, img:"images.jpg",             desc:"好用。" },
+      p103:{ id:"p103", name:"彩色行動電源",           price:499, original:599, stock:4727, img:"aukey-cubie-10000mah-pb-y55-01-o1000.webp", desc:"好用。" },
+      p104:{ id:"p104", name:"多功能行動電源",          price:699, original:799, stock:8940, img:"下載.jpg",                 desc:"好用。" },
+
+      // 充電線
+      p201:{ id:"p201", name:"Type C to C 充電線",       price:99,  original:199, stock:1036, img:"MQKJ3.jpg",  desc:"好用。" },
+      p202:{ id:"p202", name:"lighting to C 充電線",     price:99,  original:199, stock:9760, img:"MM0A3.jpg",  desc:"好用。" },
+      p203:{ id:"p203", name:"Type C to USB C 充電線",   price:49,  original:149, stock:9878, img:"6592967_R1_m.webp", desc:"好用。" },
+      p204:{ id:"p204", name:"lighting to USB C 充電線", price:49,  original:149, stock:5755, img:"1ED27519CFFFA86FAAD50B998CC419DE04775902.jpg", desc:"好用。" }
+    };
+
+    // 讓 product.html 可以取得
+    localStorage.setItem('PRODUCTS_DB', JSON.stringify(PRODUCTS));
+
+    // ---- 購物車工具 ----
+    function getCart(){ try{ return JSON.parse(localStorage.getItem('cart')||'[]'); }catch{ return []; } }
+    function setCart(cart){ localStorage.setItem('cart', JSON.stringify(cart)); }
+    function addToCart(product, qty=1){
+      const cart = getCart();
+      const existed = cart.find(i => i.id === product.id);
+      if(existed){ existed.qty += qty; }
+      else{ cart.push({ id:product.id, name:product.name, price:product.price, img:product.img, qty }); }
+      setCart(cart);
+      updateCartCount();
+      alert("已加入購物車");
+    }
+    function cartCount(){
+      return getCart().reduce((sum, i) => sum + (i.qty||0), 0);
+    }
+    function updateCartCount(){
+      const el = document.getElementById('cartCount');
+      if(el) el.textContent = cartCount();
+    }
+
+    // ---- 卡片點擊跳轉／按鈕加入購物車 ----
+    document.addEventListener('DOMContentLoaded', () => {
+      updateCartCount();
+
+      // 卡片點擊 -> 產品介紹頁
+      document.querySelectorAll('.card').forEach(card => {
+        card.addEventListener('click', (e) => {
+          // 若點到加入購物車按鈕就不要跳轉
+          if(e.target.closest('.add-to-cart')) return;
+          const id = card.getAttribute('data-id');
+          if(id) location.href = `product.html?id=${encodeURIComponent(id)}`;
+        });
+      });
+
+      // 加入購物車按鈕
+      document.querySelectorAll('.add-to-cart').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const id = btn.getAttribute('data-id');
+          const p = PRODUCTS[id];
+          if(p) addToCart(p, 1);
+        });
+      });
+    });
+  </script>
+</body>
