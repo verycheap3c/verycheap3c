@@ -65,19 +65,42 @@ body {
 </div>
 
 <script>
-/// 從網址參數取得金額
-const urlParams = new URLSearchParams(window.location.search);
-const amount = urlParams.get('amount');
-
-// 如果沒有金額 → 回首頁
+// 一進頁面先檢查金額
+const amount = sessionStorage.getItem('paidAmount');
 if (!amount) {
   location.href = 'index.html';
-}
+} else {
+  // 建立轉圈圈畫面
+  const loader = document.createElement('div');
+  loader.innerHTML = `
+    <div style="display:flex;flex-direction:column;justify-content:center;align-items:center;height:100vh;font-family:sans-serif;">
+      <div style="border:6px solid #f3f3f3;border-top:6px solid #4285f4;border-radius:50%;width:60px;height:60px;animation:spin 1s linear infinite;"></div>
+      <h2 style="margin-top:20px;">交易處理中...</h2>
+      <p>請稍候</p>
+    </div>
+    <style>
+      @keyframes spin { 
+        0% { transform: rotate(0deg); } 
+        100% { transform: rotate(360deg); } 
+      }
+    </style>
+  `;
+  document.body.appendChild(loader);
 
-// 顯示金額 & 時間
-document.getElementById('amountText').textContent = `NT$${Number(amount).toLocaleString()}`;
-document.getElementById('timeText').textContent = new Date().toLocaleString();
+  // 隱藏成功內容
+  document.querySelector('.email-container').style.display = 'none';
+
+  // 6 秒後顯示內容
+  setTimeout(() => {
+    loader.remove();
+    document.getElementById('amountText').textContent = `NT$${Number(amount).toLocaleString()}`;
+    document.getElementById('timeText').textContent = new Date().toLocaleString();
+    document.querySelector('.email-container').style.display = 'block';
+    sessionStorage.removeItem('paidAmount');
+  }, 6000);
+}
 </script>
+
 
 </body>
 </html>
