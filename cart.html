@@ -160,11 +160,17 @@
           setCart(c); render();
         });
         tr.querySelector('.plus').addEventListener('click', ()=>{
-          const c = getCart(); const it = c.find(x=>x.id===id);
+          const c = getCart();
+          const it = c.find(x=>x.id===id);
           if(!it) return;
+          if(it.qty >= 10){
+            alert("同一商品最多只能購買 10 個");
+            return;
+          }
           it.qty += 1;
           setCart(c); render();
         });
+
         tr.querySelector('.remove').addEventListener('click', ()=>{
           let c = getCart(); c = c.filter(x=>x.id!==id);
           setCart(c); render();
