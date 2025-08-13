@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<title>填寫寄送資料</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="logo.ico">
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+<style>
+body { font-family: sans-serif; background: #f7f7f7; display:flex; justify-content:center; align-items:center; min-height:100vh; margin:0; }
+.container { background:#fff; padding:20px; border-radius:12px; box-shadow:0 4px 20px rgba(0,0,0,0.1); width:100%; max-width:500px; box-sizing:border-box; }
+label { font-weight:bold; display:block; margin-top:15px; }
+input, select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  margin-top: 5px;
+  box-sizing: border-box;
+}
+button { margin-top:20px; padding:12px; width:100%; background:#111; color:#fff; border:none; border-radius:6px; font-size:16px; cursor:pointer; }
+button:hover { background:#333; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h2>填寫寄送資訊</h2>
+  <form id="checkoutForm">
+    <label>姓名</label>
+    <input type="text" id="name" required>
+
+    <label>電話</label>
+    <input type="tel" id="phone" required>
+
+    <label>電子郵件</label>
+    <input type="email" id="email" required>
+
+    <label>寄送地址</label>
+    <input type="text" id="address" required></input>
+
+    <label>備註</label>
+    <input type="text" id="note"></input>
+
+    <!-- 好禮 3 選 1（初始隱藏） -->
+    <div id="giftSection" style="display:none;">
+      <label>消費滿 $1000，免費好禮 3 選 1</label>
+      <select id="giftChoice">
+        <option value="">請選擇好禮</option>
+        <option value="USB小夜燈">USB小夜燈</option>
+        <option value="限量聯名貼紙">限量聯名貼紙</option>
+        <option value="餐具組">餐具組</option>
+      </select>
+    </div>
+
+    <button type="submit">送出並前往付款</button>
+  </form>
+</div>
+
+<script>
+// ✅ 檢查是否從購物車的繼續按鈕進來
+if (!sessionStorage.getItem('fromCart')) {
+  location.href = 'index.html'; // 首頁
+}
+
+// 購物車資料
+function getCart(){ 
+  try{ return JSON.parse(localStorage.getItem('cart') || '[]'); }
+  catch{ return []; } 
+}
+function calcTotal(){ return getCart().reduce((s,i)=>s+i.price*i.qty,0); }
+
+// 若滿 1000 顯示好禮選項
+if (calcTotal() > 1000) {
+  document.getElementById('giftSection').style.display = 'block';
+}
+
+// 表單提交
+document.getElementById('checkoutForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+
+  document.getElementById('checkoutForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+
+  // ✅ 確認必填欄位都有填
+  const requiredFields = ['name', 'phone', 'email', 'address'];
+  for (let id of requiredFields) {
+    if (!document.getElementById(id).value.trim()) {
+      alert('請完整填寫所有必填欄位');
+      return;
+    }
+  }
+
+  // ✅ 如果有顯示禮物選項，必須選擇
+  if (document.getElementById('giftSection').style.display !== 'none' &&
+      !document.getElementById('giftChoice').value) {
+    alert('請選擇一項好禮');
+    return;
+  }
+
+  // 儲存資料到 sessionStorage
+  const data = {
+    name: document.getElementById('name').value.trim(),
+    phone: document.getElementById('phone').value.trim(),
+    email: document.getElementById('email').value.trim(),
+    address: document.getElementById('address').value.trim(),
+    note: document.getElementById('note').value.trim(),
+    gift: document.getElementById('giftChoice').value || null,
+    cart: getCart(),
+    totalAmount: calcTotal(),
+    createdAt: new Date().toISOString()
+  };
+  sessionStorage.setItem('checkoutData', JSON.stringify(data));
+
+  // 記錄是從 checkout_info 來的
+  sessionStorage.setItem('fromCheckoutInfo', '1');
+
+  // 跳轉付款頁
+  location.href = 'payment.html';
+})});
+</script>
+</body>
+</html>
