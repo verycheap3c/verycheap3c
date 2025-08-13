@@ -67,6 +67,15 @@ body {
 <script>
 // 一進頁面先檢查金額
 const amount = sessionStorage.getItem('paidAmount');
+const params = new URLSearchParams(location.search);
+const method = params.get('method') || 'Visa';
+
+// 根據付款方式決定顏色
+let loaderColor = '#4285f4'; // 預設 Visa 藍色
+if (method.toLowerCase() === 'mastercard') {
+  loaderColor = '#f79e1b'; // MasterCard 橘色
+}
+
 if (!amount) {
   location.href = 'index.html';
 } else {
@@ -74,7 +83,7 @@ if (!amount) {
   const loader = document.createElement('div');
   loader.innerHTML = `
     <div style="display:flex;flex-direction:column;justify-content:center;align-items:center;height:100vh;font-family:sans-serif;">
-      <div style="border:6px solid #f3f3f3;border-top:6px solid #4285f4;border-radius:50%;width:60px;height:60px;animation:spin 1s linear infinite;"></div>
+      <div style="border:6px solid #f3f3f3;border-top:6px solid ${loaderColor};border-radius:50%;width:60px;height:60px;animation:spin 1s linear infinite;"></div>
       <h2 style="margin-top:20px;">交易處理中...</h2>
       <p>請稍候</p>
     </div>
@@ -95,12 +104,15 @@ if (!amount) {
     loader.remove();
     document.getElementById('amountText').textContent = `NT$${Number(amount).toLocaleString()}`;
     document.getElementById('timeText').textContent = new Date().toLocaleString();
+    const payFrom = document.createElement('p');
+    payFrom.textContent = `付款方式：從 ${method} 付款`;
+    document.querySelector('.email-body').appendChild(payFrom);
     document.querySelector('.email-container').style.display = 'block';
     sessionStorage.removeItem('paidAmount');
   }, 6000);
 }
-</script>
 
+</script>
 
 </body>
 </html>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<title>選擇付款方式</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="logo.ico">
+<style>
+  body { font-family:sans-serif; background:#f7f7f7; margin:0; }
+  .container { max-width:800px; margin:30px auto; background:#fff; border-radius:12px; padding:20px; box-shadow:0 4px 10px rgba(0,0,0,.08);}
+  h1 { font-size:24px; }
+  .method { margin:15px 0; padding:15px; border:1px solid #ddd; border-radius:8px; cursor:pointer; display:flex; align-items:center; gap:10px;}
+  .method img { width:50px; }
+  .method.selected { border-color:#111; background:#f0f0f0; }
+  .btn { display:inline-block; padding:12px 20px; background:#111; color:#fff; border:none; border-radius:10px; cursor:pointer; font-size:16px; margin-top:20px; }
+  .btn:disabled { background:#aaa; cursor:not-allowed; }
+  .total { font-weight:bold; font-size:18px; margin-top:10px; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <a href="cart.html" style="color: black;text-decoration: none;">← 回到購物車</a>
+  <h1>選擇付款方式</h1>
+  <div id="methods">
+    <div class="method" data-method="visa">
+      <img src="Visa_2021.png" alt="Visa">
+      <span>Visa 信用卡</span>
+    </div>
+    <div class="method" data-method="master">
+      <img src="Mastercard_2019_logo.svg.png" alt="MasterCard">
+      <span>MasterCard 信用卡</span>
+    </div>
+  </div>
+  <div class="total" id="totalPrice">總金額：NT$0</div>
+  <button id="confirmBtn" class="btn" disabled>確認付款方式</button>
+</div>
+
+<script>
+function getCart() {
+  try { return JSON.parse(localStorage.getItem('cart') || '[]'); }
+  catch { return []; }
+}
+function cartTotal() {
+  return getCart().reduce((sum, item) => sum + (item.price * item.qty), 0);
+}
+
+// 檢查：購物車要有東西 & 必須從 cart.html 按「前往結帳」進來
+if (getCart().length === 0 || sessionStorage.getItem('fromCart') !== '1') {
+  location.href = 'index.html';
+} else {
+  sessionStorage.removeItem('fromCart'); // 用過就清除
+}
+
+const totalEl = document.getElementById('totalPrice');
+totalEl.textContent = `總金額：NT$${cartTotal().toLocaleString()}`;
+
+let selectedMethod = null;
+document.querySelectorAll('.method').forEach(m => {
+  m.addEventListener('click', () => {
+    document.querySelectorAll('.method').forEach(el => el.classList.remove('selected'));
+    m.classList.add('selected');
+    selectedMethod = m.dataset.method;
+    document.getElementById('confirmBtn').disabled = false;
+  });
+});
+
+document.getElementById('confirmBtn').addEventListener('click', () => {
+  if (!selectedMethod) return;
+  localStorage.setItem('checkout_method', selectedMethod);
+  if (selectedMethod === 'visa') {
+    window.location.href = 'checkout.html';
+  } else if (selectedMethod === 'master') {
+    window.location.href = 'master_checkout.html';
+  }
+});
+
+</script>
+
+
+
+</body>
+</html>

@@ -2,234 +2,73 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
-<title>Visa 綁定驗證</title>
+<title>MasterCard 綁定驗證</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="logo.ico">
 <script src="https://js.stripe.com/v3/"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 <style>
-body {
-  font-family: sans-serif;
-  background: #f0f0f0;
-  margin: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-}
-.container {
-  background: #fff;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-  width: 100%;
-  max-width: 500px;
-}
-h2 { text-align: center; margin-bottom: 20px; }
-label { display: block; margin-top: 12px; font-weight: bold; }
-.card-preview {
-  background: linear-gradient(135deg, #1a237e, #0d47a1);
-  color: #fff;
-  border-radius: 12px;
-  padding: 20px;
-  height: 200px;
-  margin-bottom: 20px;
-  position: relative;
-  perspective: 1000px;
-  user-select:none;
-}
-.card-inner {
-  width: 100%;
-  height: 100%;
-  transition: transform 0.6s;
-  transform-style: preserve-3d;
-  position: relative;
-}
-.card-front, .card-back {
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  backface-visibility: hidden;
-  border-radius: 12px;
-  padding: 20px;
-  box-sizing: border-box;
-}
-.card-front { background: linear-gradient(135deg, #1a237e, #0d47a1); }
-.card-back {
-  background: linear-gradient(135deg, #0d47a1, #1a237e);
-  transform: rotateY(180deg);
-}
-.card-number {
-  font-size: 20px;
-  letter-spacing: 2px;
-  margin-top: 40px;
-}
-.card-name, .card-expiry { margin-top: 20px; font-size: 14px; }
-.card-chip { width: 50px; }
-.cvv-box {
-  background: #fff;
-  color: #000;
-  padding: 5px;
-  width: 60px;
-  text-align: center;
-  border-radius: 4px;
-  position: absolute;
-  right: 20px;
-  top: 80px;
-}
-.amount { font-size: 20px; font-weight: bold; margin-top: 20px; text-align: center; }
-button {
-  width: 100%;
-  padding: 12px;
-  background: #111;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  font-size: 18px;
-  cursor: pointer;
-  margin-top: 20px;
-}
-button:hover { background: #333; }
+body { font-family: sans-serif; background: #f0f0f0; margin:0; display:flex; justify-content:center; align-items:center; min-height:100vh; }
+.container { background:#fff; padding:20px; border-radius:12px; box-shadow:0 4px 20px rgba(0,0,0,0.1); width:100%; max-width:500px; }
+h2 { text-align:center; margin-bottom:20px; }
+.card-preview { background: linear-gradient(135deg, #eb001b, #f79e1b); color:#fff; border-radius:12px; padding:20px; height:200px; margin-bottom:20px; }
+.card-number { font-size:20px; letter-spacing:2px; margin-top:40px; }
+.card-expiry { margin-top:20px; font-size:14px; }
+.amount { font-size:20px; font-weight:bold; margin-top:20px; text-align:center; }
+button { width:100%; padding:12px; background:#111; color:#fff; border:none; border-radius:6px; font-size:18px; cursor:pointer; margin-top:20px; }
+button:disabled { background:#aaa; cursor:not-allowed; }
 </style>
 </head>
 <body>
 
 <div class="container">
-  <h2>Visa 綁定驗證</h2>
-
+  <h2>MasterCard 綁定驗證</h2>
   <div class="card-preview">
-    <div class="card-inner" id="cardInner">
-      <div class="card-front">
-        <img src="https://i.imgur.com/4YQ3Z9j.png" class="card-chip">
-        <div class="card-number" id="displayNumber">#### #### #### ####</div>
-        <div class="card-expiry">有效日期: <span id="displayExpiry">MM/YY</span></div>
-      </div>
-      <div class="card-back">
-        <div style="background:#000; height:40px; margin-top:20px;"></div>
-        <div class="cvv-box" id="displayCVV">###</div>
-      </div>
-    </div>
+    <div class="card-number" id="displayNumber">#### #### #### ####</div>
+    <div class="card-expiry">有效日期: <span id="displayExpiry">MM/YY</span></div>
   </div>
-
   <label>信用卡資訊</label>
   <div id="card-element" style="padding:12px; border:1px solid #ccc; border-radius:6px; background:#fff;"></div>
-
   <div class="amount">應付金額：NT$<span id="totalAmount">0</span></div>
-
-  <button id="payBtn">綁定 Visa</button>
+  <button id="payBtn" disabled>綁定 MasterCard</button>
 </div>
 
 <script>
-/* 初始化 Firebase */
-const firebaseConfig = { 
-  apiKey: "AIzaSyDmtArzeICIK5BGjrK7HM4IDiCliqSYEqo",
-  authDomain: "verycheap3c-store.firebaseapp.com",
-  projectId: "verycheap3c-store",
-  storageBucket: "verycheap3c-store.firebasestorage.app",
-  messagingSenderId: "108546246505",
-  appId: "1:108546246505:web:528e644f48e806a1b05ff8",
-  measurementId: "G-1BGPBHRYZC"
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-
-/* Stripe 初始化 */
+// Stripe 初始化
 const stripe = Stripe('pk_test_51RvJIFHeBIX5ZKnTQINPGUEHo03UW1X5cJQWJduivDtCUx1Bk3OWHi7Ho5JWOeGvfqMDmCldv2ahuYN6teGsTnhg00EPzdUH4W');
 const elements = stripe.elements();
 const cardElement = elements.create('card', { hidePostalCode: true });
 cardElement.mount('#card-element');
 
-// 一開始先禁用按鈕
-const payBtn = document.getElementById('payBtn');
-payBtn.disabled = true;
-payBtn.style.opacity = "0.5";
-payBtn.style.cursor = "not-allowed";
-
-// 監聽輸入狀態
-cardElement.on('change', event => {
-  if (event.complete) {
-    payBtn.disabled = false;
-    payBtn.style.opacity = "1";
-    payBtn.style.cursor = "pointer";
-  } else {
-    payBtn.disabled = true;
-    payBtn.style.opacity = "0.5";
-    payBtn.style.cursor = "not-allowed";
-  }
-
-  if (event.complete && event.brand === 'visa') {
-    document.getElementById('displayNumber').textContent = 'VISA 卡號已輸入完成';
-  } else if (event.empty) {
-    document.getElementById('displayNumber').textContent = '#### #### #### ####';
-  }
-});
-
-
-/* 購物車金額 & 空購物車檢查 */
-function getCart() {
-  try { return JSON.parse(localStorage.getItem('cart') || '[]'); }
-  catch { return []; }
-}
-function calcTotal() {
-  return getCart().reduce((sum, item) => sum + item.price * item.qty, 0);
-}
-if (getCart().length === 0) { location.href = 'index.html'; }
+// 購物車檢查
+function getCart(){ try{ return JSON.parse(localStorage.getItem('cart')||'[]'); }catch{ return []; } }
+function calcTotal(){ return getCart().reduce((sum,item)=> sum + item.price * item.qty, 0); }
+if(getCart().length === 0) location.href = 'index.html';
 document.getElementById('totalAmount').textContent = calcTotal().toLocaleString();
 
-/* 卡面動畫同步 */
+const payBtn = document.getElementById('payBtn');
+
+// 監聽輸入狀態 + MasterCard 驗證
 cardElement.on('change', event => {
-  if (event.complete) {
-    if (event.brand === 'visa') {
-      document.getElementById('displayNumber').textContent = 'VISA 卡號已輸入完成';
-    }
-  } else if (event.empty) {
+  if (event.complete && event.brand === 'mastercard') {
+    payBtn.disabled = false;
+    document.getElementById('displayNumber').textContent = 'MasterCard 卡號已輸入完成';
+  } else {
+    payBtn.disabled = true;
+    document.getElementById('displayNumber').textContent = '#### #### #### ####';
+  }
+  if (event.empty) {
     document.getElementById('displayNumber').textContent = '#### #### #### ####';
   }
 });
 
-/* 按下綁定 Visa（模擬成功） */
-document.getElementById('payBtn').addEventListener('click', () => {
-  // 這裡原本是 Stripe API 驗證，我們改成直接模擬成功
+// 按下綁定 MasterCard（模擬成功）
+payBtn.addEventListener('click', () => {
   const totalAmount = calcTotal();
   localStorage.removeItem('cart');
   sessionStorage.setItem('paidAmount', totalAmount);
-location.href = `success.html`;
-
+  location.href = `success.html?method=MasterCard`;
 });
-function getCart() {
-  try { return JSON.parse(localStorage.getItem('cart') || '[]'); }
-  catch { return []; }
-}
-function calcTotal() {
-  return getCart().reduce((sum, item) => sum + item.price * item.qty, 0);
-}
-if (getCart().length === 0) { location.href = 'index.html'; }
-document.getElementById('totalAmount').textContent = calcTotal().toLocaleString();
 
-document.getElementById('payBtn').addEventListener('click', () => {
-  // 顯示 loading 畫面（點下去才顯示）
-  document.body.innerHTML = `
-    <div style="display:flex;flex-direction:column;justify-content:center;align-items:center;height:100vh;font-family:sans-serif;">
-      <div style="border:6px solid #f3f3f3;border-top:6px solid #4285f4;border-radius:50%;width:60px;height:60px;animation:spin 1s linear infinite;"></div>
-      <h2 style="margin-top:20px;">付款處理中...</h2>
-      <p>請稍候</p>
-    </div>
-    <style>
-      @keyframes spin { 
-        0% { transform: rotate(0deg); } 
-        100% { transform: rotate(360deg); } 
-      }
-    </style>
-  `;
-
- // 固定延遲 6 秒
-  setTimeout(() => {
-    const totalAmount = calcTotal();
-    localStorage.removeItem('cart');
-    location.href = `success.html?amount=${totalAmount}`;
-  }, 6000);
-});
 </script>
-
 </body>
 </html>
