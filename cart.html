@@ -146,7 +146,7 @@
           </tfoot>
         </table>
         <div class="right" style="margin-top:12px;">
-          <button class="btn" id="checkout">前往 Visa 結帳</button>
+          <button class="btn" id="checkout">繼續</button>
         </div>
       `;
 
@@ -178,7 +178,8 @@
       });
 
       document.getElementById('checkout').addEventListener('click', ()=>{
-  location.href = 'checkout.html';
+  sessionStorage.setItem('fromCart', '1'); // 標記從購物車過來
+  location.href = 'checkout_info.html';
 });
 
 
@@ -186,6 +187,7 @@
     }
 
     render();
+    
   </script>
 </body>
 </html>
