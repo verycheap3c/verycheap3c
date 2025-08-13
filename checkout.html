@@ -139,6 +139,32 @@ const elements = stripe.elements();
 const cardElement = elements.create('card', { hidePostalCode: true });
 cardElement.mount('#card-element');
 
+// 一開始先禁用按鈕
+const payBtn = document.getElementById('payBtn');
+payBtn.disabled = true;
+payBtn.style.opacity = "0.5";
+payBtn.style.cursor = "not-allowed";
+
+// 監聽輸入狀態
+cardElement.on('change', event => {
+  if (event.complete) {
+    payBtn.disabled = false;
+    payBtn.style.opacity = "1";
+    payBtn.style.cursor = "pointer";
+  } else {
+    payBtn.disabled = true;
+    payBtn.style.opacity = "0.5";
+    payBtn.style.cursor = "not-allowed";
+  }
+
+  if (event.complete && event.brand === 'visa') {
+    document.getElementById('displayNumber').textContent = 'VISA 卡號已輸入完成';
+  } else if (event.empty) {
+    document.getElementById('displayNumber').textContent = '#### #### #### ####';
+  }
+});
+
+
 /* 購物車金額 & 空購物車檢查 */
 function getCart() {
   try { return JSON.parse(localStorage.getItem('cart') || '[]'); }
@@ -161,23 +187,14 @@ cardElement.on('change', event => {
   }
 });
 
-// 購物車金額 & 空購物車檢查
-function getCart() {
-  try { return JSON.parse(localStorage.getItem('cart') || '[]'); }
-  catch { return []; }
-}
-function calcTotal() {
-  return getCart().reduce((sum, item) => sum + item.price * item.qty, 0);
-}
-if (getCart().length === 0) { location.href = 'index.html'; }
-document.getElementById('totalAmount').textContent = calcTotal().toLocaleString();
-
 /* 按下綁定 Visa（模擬成功） */
 document.getElementById('payBtn').addEventListener('click', () => {
   // 這裡原本是 Stripe API 驗證，我們改成直接模擬成功
   const totalAmount = calcTotal();
   localStorage.removeItem('cart');
-  location.href = `success.html?amount=${totalAmount}`;
+  sessionStorage.setItem('paidAmount', totalAmount);
+location.href = `success.html`;
+
 });
 function getCart() {
   try { return JSON.parse(localStorage.getItem('cart') || '[]'); }
@@ -205,16 +222,12 @@ document.getElementById('payBtn').addEventListener('click', () => {
     </style>
   `;
 
-  // 3~7 秒隨機延遲（點下去才開始算）
-  const minSec = 3;
-  const maxSec = 7;
-  const delay = Math.floor(Math.random() * (maxSec - minSec + 1) + minSec) * 1000;
-
+ // 固定延遲 6 秒
   setTimeout(() => {
     const totalAmount = calcTotal();
     localStorage.removeItem('cart');
     location.href = `success.html?amount=${totalAmount}`;
-  }, delay);
+  }, 6000);
 });
 </script>
 
