@@ -69,9 +69,9 @@ document.getElementById('confirmBtn').addEventListener('click', () => {
   if (!selectedMethod) return;
   localStorage.setItem('checkout_method', selectedMethod);
   if (selectedMethod === 'visa') {
-    window.location.href = 'checkout.html';
+    window.location.href = 'Visa_scheckout.html';
   } else if (selectedMethod === 'master') {
-    window.location.href = 'master_checkout.html';
+    window.location.href = 'MasterCard_checkout.html';
   }
 });
 
@@ -81,3 +81,4 @@ document.getElementById('confirmBtn').addEventListener('click', () => {
 
 </body>
 </html>
+
